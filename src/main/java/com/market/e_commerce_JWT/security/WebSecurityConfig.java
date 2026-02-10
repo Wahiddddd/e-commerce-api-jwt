@@ -31,7 +31,8 @@ public class WebSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "/api/users/login", "/uploads/**").permitAll()
+                        .requestMatchers("/api/users/register", "/api/users/login", "/uploads/**", "/actuator/**")
+                        .permitAll()
                         .anyRequest().authenticated());
 
         // Pasang filter JWT sebelum filter UsernamePassword standar
