@@ -28,7 +28,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    private String role; // Contoh isi: "BUYER" atau "SELLER"
+    private String role; // "BUYER" atau "SELLER"
 
     // Spring Security menggunakan method ini untuk mengecek Role
     @Override
@@ -37,11 +37,22 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() {
+        return true;
+    }
 }

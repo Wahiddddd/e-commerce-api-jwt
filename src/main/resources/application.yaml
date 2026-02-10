@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://classroom_mysql:3306/db_spring_student7?createDatabaseIfNotExist=true&serverTimezone=UTC}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/db_spring_student7?createDatabaseIfNotExist=true&serverTimezone=UTC}
     username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${SPRING_DATASOURCE_PASSWORD:rahasia_banget}
     driver-class-name: com.mysql.cj.jdbc.Driver
