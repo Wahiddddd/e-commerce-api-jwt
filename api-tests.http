@@ -1,0 +1,61 @@
+### User API Testing
+@baseUrl = http://localhost:8080/api
+
+# @name registerUser
+POST {{baseUrl}}/users/register
+Content-Type: application/json
+
+{
+    "username": "user123",
+    "password": "password123",
+    "role": "USER"
+}
+
+###
+
+# @name loginUser
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+    "username": "user123",
+    "password": "password123"
+}
+
+### Capture JWT from login response
+@token = {{loginUser.response.body.token}}
+
+### Product API Testing (Requires Authentication)
+
+# @name getAllProducts
+GET {{baseUrl}}/products?page=0&size=10
+Authorization: Bearer {{token}}
+
+###
+
+# @name addProduct
+POST {{baseUrl}}/products
+Authorization: Bearer {{token}}
+X-Seller-Id: SELLER_001
+Content-Type: application/json
+
+{
+    "name": "Smartphone X",
+    "description": "Powerful smartphone with 128GB storage",
+    "price": 5000000,
+    "stock": 50
+}
+
+###
+
+# @name getProductById
+# Replace {id} with an actual product ID from getAllProducts
+GET {{baseUrl}}/products/PRODUCT_ID_HERE
+Authorization: Bearer {{token}}
+
+###
+
+# @name deleteProduct
+# Replace {id} with an actual product ID
+DELETE {{baseUrl}}/products/PRODUCT_ID_HERE
+Authorization: Bearer {{token}}
