@@ -54,7 +54,7 @@ cd /home/student/spring-app/student7
 ```
 
 ### 3. Deploy Menggunakan Docker (Rekomendasi)
-Gunakan `docker-compose.yml` berikut (sesuaikan password database sesuai info mentor):
+Gunakan `docker-compose.yml` berikut di dalam folder `student7`:
 ```yaml
 version: '3.8'
 services:
@@ -64,23 +64,20 @@ services:
       - "9007:9007"
     environment:
       - SERVER_PORT=9007
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db_student7:3306/db_spring_student7
+      - SPRING_DATASOURCE_URL=jdbc:mysql://classroom_mysql:3306/db_spring_student7
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootpassword
-    depends_on:
-      - db_student7
-  db_student7:
-    image: mysql:8.0
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
-      - MYSQL_DATABASE=db_spring_student7
-    ports:
-      - "3307:3306"
+      - SPRING_DATASOURCE_PASSWORD=rahasia_banget
+    networks:
+      - classroom_classroom_net
+
+networks:
+  classroom_classroom_net:
+    external: true
 ```
 
 Jalankan:
 ```bash
-docker-compose up -d
+docker-compose up -d --build
 ```
 
 ### 4. Link API Publik
