@@ -1,6 +1,15 @@
 server:
   port: ${APP_PORT:9007}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: always
+
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/db_spring_student7?createDatabaseIfNotExist=true&serverTimezone=UTC}
