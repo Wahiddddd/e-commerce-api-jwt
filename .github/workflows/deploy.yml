@@ -1,4 +1,4 @@
-name: Build and Deploy to VPS
+name: CI/CD - Build & Deploy
 
 on:
   push:
@@ -6,69 +6,86 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
+
+    env:
+      # Deployment Configuration - Change image name here
+      IMAGE_NAME: spring-deploy-student7-app
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      APP_DIR: /home/student/spring-app/student7 # Sesuaikan dengan direktori di VPS
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Build with Maven
+      - name: Build application with Maven
         run: mvn clean package -DskipTests
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
+      # 🐳 BUILD & PUSH DOCKER IMAGE
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/e-commerce-api:latest
+          tags: |
+            ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          cache-to: type=inline
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@master
+      # 📂 COPY DOCKER-COMPOSE TO VPS
+      - name: Copy docker-compose to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "${{ env.APP_DIR }}"
+
+      # 🚀 DEPLOY ON VPS (PULL & RUN ONLY)
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /home/student/spring-app/student7
-            # Login Docker can be omitted if image is public or already logged in on server
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/e-commerce-api:latest
-            
-            # Create or update docker-compose.yml if not exists
-            cat <<EOF > docker-compose.yml
-            version: '3.8'
-            services:
-              app:
-                image: ${{ secrets.DOCKERHUB_USERNAME }}/e-commerce-api:latest
-                ports:
-                  - "9007:9007"
-                environment:
-                  - SERVER_PORT=9007
-                  - SPRING_DATASOURCE_URL=jdbc:mysql://classroom_mysql:3306/db_spring_student7
-                  - SPRING_DATASOURCE_USERNAME=root
-                  - SPRING_DATASOURCE_PASSWORD=rahasia_banget
-                networks:
-                  - classroom_classroom_net
-
-            networks:
-              classroom_classroom_net:
-                external: true
-            EOF
-            
-            docker-compose up -d
+            cd ${{ env.APP_DIR }}
+            echo "🚀 Starting deployment..."
+           
+            echo "✅ Configuration files verified"
+           
+            # Pull latest image and deploy
+            echo "📥 Pulling latest image..."
+            docker compose pull
+           
+            echo "🔄 Restarting services..."
+            docker compose down
+            docker compose up -d
+           
+            echo "⏳ Waiting for health check..."
+            sleep 10
+           
+            # Verify deployment
+            if docker compose ps | grep -q "Up"; then
+              echo "✅ Deployment completed successfully!"
+              docker compose ps
+            else
+              echo "❌ Deployment failed!"
+              docker compose logs
+              exit 1
+            fi

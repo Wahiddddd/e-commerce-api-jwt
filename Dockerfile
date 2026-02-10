@@ -1,11 +1,31 @@
-# Build stage
-FROM maven:3.8.5-openjdk-17 AS build
-COPY src /home/app/src
-COPY pom.xml /home/app
-RUN mvn -f /home/app/pom.xml clean package -DskipTests
+# ================================
+# STAGE 1: Build Application
+# ================================
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
-# Run stage
-FROM eclipse-temurin:17-jre-jammy
-COPY --from=build /home/app/target/e-commerce-JWT-0.0.1-SNAPSHOT.jar /usr/local/lib/app.jar
-EXPOSE 8080
-ENTRYPOINT ["java","-jar","/usr/local/lib/app.jar"]
+WORKDIR /app
+
+# Copy pom.xml dulu supaya dependency bisa di-cache
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy source code
+COPY src ./src
+
+# Build jar
+RUN mvn clean package -DskipTests
+
+# ================================
+# STAGE 2: Runtime
+# ================================
+FROM eclipse-temurin:21-jre-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache wget
+
+# Copy hasil build dari stage sebelumnya
+COPY --from=build /app/target/*.jar app.jar
+
+# Default command dengan profile development
+ENTRYPOINT ["java", "-jar", "app.jar"]
