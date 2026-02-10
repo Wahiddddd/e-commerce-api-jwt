@@ -1,10 +1,10 @@
 services:
-  spring-deploy-student7b-app:
+  spring-deploy-wahid-api:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ${DOCKERHUB_USERNAME}/spring-deploy-student7b-app:latest
-    container_name: spring-deploy-student7b-app
+    image: ${DOCKERHUB_USERNAME}/spring-deploy-student7-app:latest
+    container_name: spring-deploy-wahid-api
     ports:
       - ${APP_PORT:-9007}:${APP_PORT:-9007}
     env_file:

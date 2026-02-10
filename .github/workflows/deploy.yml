@@ -11,7 +11,7 @@ jobs:
 
     env:
       # Deployment Configuration - Change image name here
-      IMAGE_NAME: spring-deploy-student7b-app
+      IMAGE_NAME: spring-deploy-wahid-api
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       APP_DIR: /home/student/spring-app/student7 # Sesuaikan dengan direktori di VPS
 
