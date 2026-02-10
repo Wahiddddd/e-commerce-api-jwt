@@ -1,10 +1,10 @@
 services:
-  spring-deploy-student7-app:
+  spring-deploy-student7b-app:
     build:
       context: .
       dockerfile: Dockerfile
     image: ${DOCKERHUB_USERNAME}/spring-deploy-student7-app:latest
-    container_name: spring-deploy-student7-app
+    container_name: spring-deploy-student7b-app
     ports:
       - ${APP_PORT:-9007}:${APP_PORT:-9007}
     env_file:
