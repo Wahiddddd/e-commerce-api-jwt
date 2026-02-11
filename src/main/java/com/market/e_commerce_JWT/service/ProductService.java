@@ -3,6 +3,7 @@ package com.market.e_commerce_JWT.service;
 import com.market.e_commerce_JWT.dto.ProductRequestDTO;
 import com.market.e_commerce_JWT.dto.ProductResponseDTO;
 import com.market.e_commerce_JWT.entity.Product;
+import com.market.e_commerce_JWT.entity.Role;
 import com.market.e_commerce_JWT.entity.User;
 import com.market.e_commerce_JWT.exception.BusinessException;
 import com.market.e_commerce_JWT.exception.ResourceNotFoundException;
@@ -24,15 +25,15 @@ public class ProductService {
     private UserRepository userRepository;
 
     public ProductResponseDTO createProduct(ProductRequestDTO dto, String sellerId) {
-        User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Seller tidak ditemukan. Pastikan ID Seller benar."));
 
-        // validasi role
-        if (!"SELLER".equals(seller.getRole())) {
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller tidak ditemukan"));
+
+        // VALIDASI
+        if (seller.getRole() != Role.SELLER) {
             throw new BusinessException("Hanya akun dengan Role SELLER yang bisa menambah produk");
         }
 
-        // Mapping RequestDTO -> Entity
         Product product = new Product();
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
@@ -43,7 +44,6 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        // Return sebagai ResponseDTO
         return mapToProductResponse(savedProduct);
     }
 
