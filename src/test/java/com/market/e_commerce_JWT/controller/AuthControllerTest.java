@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.market.e_commerce_JWT.dto.LoginRequest;
 import com.market.e_commerce_JWT.dto.UserRequestDTO;
 import com.market.e_commerce_JWT.dto.UserResponseDTO;
+import com.market.e_commerce_JWT.entity.Role;
 import com.market.e_commerce_JWT.entity.User;
 import com.market.e_commerce_JWT.security.JwtUtils;
 import com.market.e_commerce_JWT.service.UserService;
@@ -52,44 +53,60 @@ public class AuthControllerTest {
 
     @Test
     public void testRegisterUser() throws Exception {
+
+        // ===== REQUEST =====
         UserRequestDTO request = new UserRequestDTO();
         request.setUsername("testuser");
         request.setPassword("password");
-        request.setRole("USER");
+        request.setRole("BUYER");   // HARUS BUYER/SELLER
 
-        UserResponseDTO response = new UserResponseDTO("id123", "testuser", "USER");
+        // ===== RESPONSE =====
+        UserResponseDTO response =
+                new UserResponseDTO("id123", "testuser", "BUYER");
 
-        when(userService.createUser(any(UserRequestDTO.class))).thenReturn(response);
+        when(userService.createUser(any(UserRequestDTO.class)))
+                .thenReturn(response);
 
         mockMvc.perform(post("/api/users/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("testuser"));
+                .andExpect(jsonPath("$.username").value("testuser"))
+                .andExpect(jsonPath("$.role").value("BUYER"))   // ✅ validasi role
+                .andExpect(jsonPath("$.role").value("BUYER"));
     }
 
     @Test
     public void testLoginUser() throws Exception {
+
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setUsername("testuser");
         loginRequest.setPassword("password");
 
         Authentication authentication = mock(Authentication.class);
+
+        // ===== USER DENGAN ENUM ROLE =====
         User user = new User();
         user.setId("id123");
         user.setUsername("testuser");
-        user.setRole("USER");
+        user.setRole(Role.BUYER);
 
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+        when(authenticationManager.authenticate(any(
+                UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
+
         when(authentication.getPrincipal()).thenReturn(user);
-        when(jwtUtils.generateJwtToken("testuser")).thenReturn("mock-jwt-token");
+
+        when(jwtUtils.generateJwtToken("testuser"))
+                .thenReturn("mock-jwt-token");
 
         mockMvc.perform(post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("mock-jwt-token"))
-                .andExpect(jsonPath("$.username").value("testuser"));
+                .andExpect(jsonPath("$.username").value("testuser"))
+                .andExpect(jsonPath("$.role").value("BUYER"));
     }
 }
+
