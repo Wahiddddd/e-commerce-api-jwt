@@ -28,13 +28,16 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    private String role; // "BUYER" atau "SELLER"
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
-    // Spring Security menggunakan method ini untuk mengecek Role
+    // Spring Security, method untuk mengecek Role
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
+
 
     @Override
     public boolean isAccountNonExpired() {
